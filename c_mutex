@@ -1,0 +1,68 @@
+#include <stdio.h>
+#include <pthread.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+#define DRAW_AND_DEPOSIT 50 
+
+int bank_money = 5000;
+pthread_mutex_t mutex;
+
+void* DepositAndDraw(void* thread_id){
+	int* id = thread_id;
+	int banker_money = 1000;
+	int count = 0;
+
+	while(count < 20){
+		if((*id) % 2 == 0){ // дели се на 2 => депозираме 
+			if(banker_money >= DRAW_AND_DEPOSIT){
+				banker_money -= DRAW_AND_DEPOSIT;
+				pthread_mutex_lock(&mutex);
+				bank_money += DRAW_AND_DEPOSIT;
+				sleep(1);
+				pthread_mutex_unlock(&mutex);
+				count++;
+				printf("Banker %d deposited 50 money\n", *id);
+			}
+		}else if ((*id) % 2 == 1){
+			pthread_mutex_lock(&mutex);
+			if(bank_money >= DRAW_AND_DEPOSIT){
+				bank_money -= DRAW_AND_DEPOSIT;
+				banker_money += DRAW_AND_DEPOSIT;
+				sleep(1);
+				pthread_mutex_unlock(&mutex);
+				count++;
+				printf("Banker %d draw 50 money\n", *id);
+			}else{
+				pthread_mutex_unlock(&mutex);
+				printf("Banker %d draw 50 money\n", *id);
+			} 
+		}
+	}
+	printf("Banker %d money: %d\n", *id, banker_money);
+	printf("Bank money: %d\n", banker_money);
+}
+
+int main(int argc, char *argv[]){
+	pthread_mutex_init(&mutex, NULL);
+
+		int bankers_num = atoi(argv[1]);
+
+	pthread_t array_thread[bankers_num]; // инициализираме нишки в един масив
+	int i;
+	for(i = 0; i < bankers_num; i++){
+
+		int* p_bankers = malloc(sizeof(int));
+		*p_bankers = i;
+		
+		pthread_create(&array_thread[i], NULL, DepositAndDraw, p_bankers);
+	}
+
+	for(i = 0; i < bankers_num; i++){
+		pthread_join(array_thread[i], NULL);
+	}
+
+	//free(); // 
+	pthread_mutex_destroy(&mutex);
+	return 0;
+}
