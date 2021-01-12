@@ -1,0 +1,56 @@
+
+#include<iostream>
+#include<thread>
+#include<mutex>
+#include<chrono>
+using namespace std;
+
+mutex mtx;
+int new_cup=20;
+int used_cup=0;
+
+void thread_drink()
+{
+    while(true)
+    {
+        mtx.lock();
+        if(new_cup>0)
+        {
+           new_cup--;
+           used_cup++;
+            this_thread::sleep_for(chrono::seconds(1));
+        }
+		    else
+        {
+          this_thread::sleep_for(chrono::seconds(10));
+        }       
+        mtx.unlock();
+    }
+}
+void thread_recicle()
+{
+    while(true)
+    {
+        mtx.lock();
+        if(used_cup>=3)
+        {
+           new_cup++;
+           used_cup-=3;
+            this_thread::sleep_for(chrono::seconds(3));
+        }
+		    else
+        {
+          this_thread::sleep_for(chrono::seconds(5));
+        }       
+        mtx.unlock();
+    }
+}
+
+int main()
+{
+    thread t1(thread_drink);
+    thread t2(thread_recicle);
+    t1.join();
+    t2.join();
+    return 0;
+}
