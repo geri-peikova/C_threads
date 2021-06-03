@@ -3,6 +3,7 @@
 //   text	   data	    bss	    dec	    hex	filename
 //   3923	    688	    104	   4715	   126b	kr
 
+//gcc -o kr1 kr1.c -lpthread
 
 
 
